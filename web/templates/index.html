@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  {% set page_title = site_name ~ ' — Instant link generation & streaming' %}
+  {% include "_head.html" %}
+  <style>
+    body{display:flex;align-items:center;justify-content:center;padding:24px 16px}
+    .card{text-align:center;padding:var(--sp-12) var(--sp-8);max-width:520px;width:100%;animation:slideUp .6s var(--ease-out) both}
+    .logo{font-size:3rem;margin-bottom:16px;animation:popIn .5s var(--ease-spring) .1s both;filter:drop-shadow(0 6px 20px rgba(0,176,155,.4))}
+    h1{font-size:2rem;font-weight:800;margin-bottom:12px;letter-spacing:-.02em}
+    .lead{color:var(--text-muted);font-size:.96rem;line-height:1.65;max-width:420px;margin:0 auto var(--sp-6)}
+    .features{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:var(--sp-6) 0}
+    .feature{background:var(--glass-2);border:1px solid var(--glass-border);border-radius:var(--r-md);padding:14px 14px;text-align:left;transition:transform var(--t-fast) var(--ease-spring),var(--theme-t)}
+    .feature:hover{transform:translateY(-3px)}
+    .feature .fi{font-size:1.3rem}
+    .feature .ft{font-weight:600;font-size:.86rem;margin:6px 0 2px}
+    .feature .fd{font-size:.76rem;color:var(--text-muted);line-height:1.4}
+    .badge-online{display:inline-flex;align-items:center;gap:8px;margin-top:var(--sp-5);padding:9px 20px;background:linear-gradient(90deg,var(--brand1),var(--brand2));border-radius:var(--r-full);font-weight:600;font-size:.85rem;color:#fff;box-shadow:var(--shadow-btn)}
+    .dot{width:9px;height:9px;border-radius:50%;background:#eaffd0;box-shadow:0 0 0 0 rgba(234,255,208,.7);animation:pulse 1.8s infinite}
+    @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(234,255,208,.6)}70%{box-shadow:0 0 0 10px rgba(234,255,208,0)}100%{box-shadow:0 0 0 0 rgba(234,255,208,0)}}
+    .footer{margin-top:var(--sp-6);font-size:.72rem;color:var(--text-faint)}
+    @media(max-width:480px){.card{padding:var(--sp-10) var(--sp-5)}h1{font-size:1.6rem}.features{grid-template-columns:1fr}}
+  </style>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"{{ site_name }}","applicationCategory":"MultimediaApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+  </script>
+</head>
+<body data-particles="18">
+
+{% include "_chrome.html" %}
+
+<div class="card">
+  <div class="logo">🎬</div>
+  <h1>{{ site_name }}</h1>
+  <p class="lead">{{ site_tagline }}</p>
+
+  <div class="features">
+    <div class="feature reveal"><div class="fi">🔗</div><div class="ft">Instant Link Generation</div><div class="fd">Send a file, get a clean shareable link in seconds.</div></div>
+    <div class="feature reveal"><div class="fi">▶️</div><div class="ft">Seek-Anywhere Streaming</div><div class="fd">Play video & audio instantly — no full download needed.</div></div>
+    <div class="feature reveal"><div class="fi">⚡</div><div class="ft">Parallel Downloads</div><div class="fd">Multi-connection speed with full resume support.</div></div>
+    <div class="feature reveal"><div class="fi">📦</div><div class="ft">Batch Links</div><div class="fd">Bundle many files behind one shareable link.</div></div>
+  </div>
+
+  <div class="badge-online"><span class="dot"></span> Online &amp; Running</div>
+  <div class="footer">Powered by Telegram · Pyrogram · Created by {{ creator_name }}</div>
+</div>
+
+<script src="/static/theme.js?v=7" defer></script>
+</body>
+</html>
