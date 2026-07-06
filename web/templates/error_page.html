@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  {% set page_title = title ~ ' — ' ~ site_name %}
+  {% set page_desc = message %}
+  {% set robots = 'noindex, follow' %}
+  {% include "_head.html" %}
+  <style>
+    body{display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{text-align:center;padding:52px 40px;max-width:480px;width:100%;animation:slideUp .5s var(--ease-out) both}
+    .emoji{font-size:3.4rem;margin-bottom:16px;animation:bounce 1s ease .35s both}
+    @keyframes bounce{0%{transform:translateY(-20px);opacity:0}60%{transform:translateY(6px)}100%{transform:translateY(0);opacity:1}}
+    .code{font-size:4.4rem;font-weight:800;line-height:1;background:linear-gradient(90deg,var(--danger1),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:10px}
+    h1{font-size:1.4rem;font-weight:700;margin-bottom:14px;line-height:1.3}
+    p{color:var(--text-muted);font-size:.9rem;line-height:1.65;margin-bottom:var(--sp-8)}
+    .actions{display:flex;flex-direction:column;gap:12px;align-items:center}
+    .actions .btn{min-width:200px}
+    .tips{margin-top:var(--sp-6);text-align:left;background:var(--glass-2);border:1px solid var(--glass-border);border-radius:var(--r-md);padding:16px 18px;font-size:.82rem;color:var(--text-muted);line-height:1.7}
+    .tips strong{color:var(--text);display:block;margin-bottom:6px}
+    .tips li{margin-left:16px}
+    @media(max-width:480px){.card{padding:36px 22px}.code{font-size:3.4rem}}
+  </style>
+</head>
+<body data-particles="10">
+
+{% include "_chrome.html" %}
+
+<div class="card">
+  <div class="emoji" id="errEmoji">❌</div>
+  <div class="code">{{ code }}</div>
+  <h1>{{ title }}</h1>
+  <p>{{ message }}</p>
+  <div class="actions">
+    <a href="/" class="btn btn-primary">🏠 Go to Home</a>
+    <button onclick="history.back()" class="btn btn-ghost" type="button">← Go Back</button>
+  </div>
+  <div class="tips" id="tips"></div>
+</div>
+
+<script src="/static/theme.js?v=7" defer></script>
+<script>
+  var code={{ code }};
+  var config={
+    404:{emoji:'🔍',tips:['The uploader may have deleted the file.','The link might have been shared incorrectly — check for typos.','Ask the uploader to generate a new share link.']},
+    410:{emoji:'⏰',tips:['This link had a time limit set by the uploader.','Ask the uploader to generate a fresh permanent link.','Permanent links (no expiry) are available by default.']},
+    500:{emoji:'⚠️',tips:['This is a temporary server issue — try again in a moment.','If the problem persists, contact the bot admin.']}
+  };
+  var info=config[code]||{emoji:'❌',tips:[]};
+  document.getElementById('errEmoji').textContent=info.emoji;
+  var tipsEl=document.getElementById('tips');
+  if(info.tips.length){tipsEl.innerHTML='<strong>💡 What you can do:</strong><ul>'+info.tips.map(function(t){return'<li>'+t+'</li>';}).join('')+'</ul>';}
+  else{tipsEl.remove();}
+</script>
+</body>
+</html>
