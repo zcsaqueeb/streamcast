@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  {% include "_head.html" %}
+  <style>
+    body{padding:32px 16px}
+    .wrap{max-width:1100px;margin:0 auto;position:relative;z-index:1}
+
+    .header{text-align:center;margin-bottom:var(--sp-6);animation:slideDown .5s var(--ease-out) both}
+    .header .emoji{font-size:2.4rem;margin-bottom:10px}
+    .header h1{font-size:1.8rem;font-weight:800;margin-bottom:8px}
+    .header p{color:var(--text-muted);font-size:.9rem}
+    .header code{background:var(--chip-bg);padding:2px 8px;border-radius:6px;font-size:.8rem}
+
+    /* Toolbar: search + actions */
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;margin:0 auto var(--sp-6);max-width:760px;animation:slideDown .5s .08s both ease}
+    .search{
+      flex:1;min-width:200px;display:flex;align-items:center;gap:8px;
+      background:var(--glass);border:1px solid var(--glass-border);
+      border-radius:var(--r-md);padding:11px 14px;
+    }
+    .search input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:var(--font);font-size:.9rem}
+    .search input::placeholder{color:var(--text-faint)}
+
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px}
+
+    .file-card{
+      background:var(--glass);border:1px solid var(--glass-border);
+      border-radius:var(--r-xl);overflow:hidden;display:flex;flex-direction:column;
+      transition:transform var(--t-med) var(--ease-spring),box-shadow var(--t-med),var(--theme-t);
+    }
+    .file-card.reveal{transition:opacity .5s var(--ease-out),transform .5s var(--ease-out)}
+    .file-card:hover{transform:translateY(-5px);box-shadow:0 16px 48px rgba(0,0,0,.30)}
+    .file-card.hide{display:none}
+
+    .card-thumb{width:100%;height:155px;background:var(--glass-2);display:flex;align-items:center;justify-content:center;font-size:60px;overflow:hidden;position:relative}
+    .card-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+    .card-thumb .card-thumb-skel{position:absolute;inset:0}
+    .file-card:hover .card-thumb img{transform:scale(1.05)}
+    .play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);opacity:0;transition:opacity .2s;font-size:40px}
+    .file-card:hover .play-overlay{opacity:1}
+
+    .card-body{padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:10px}
+    .card-name{font-weight:600;font-size:.88rem;word-break:break-word;line-height:1.35}
+    .card-meta{display:flex;gap:6px;flex-wrap:wrap}
+    .card-actions{display:flex;gap:8px;margin-top:auto}
+    .card-actions .btn{flex:1;padding:10px;font-size:.82rem;border-radius:var(--r-sm)}
+    .card-actions .btn.icon{flex:0 0 auto;width:42px}
+
+    .empty{text-align:center;padding:60px 20px;color:var(--text-muted);font-size:1.05rem}
+    .footer{text-align:center;margin-top:var(--sp-10);font-size:.72rem;color:var(--text-faint)}
+
+    /* ── Mobile responsive layout ──
+       Every other page (index/file/error) had a 480px breakpoint; this one
+       had none, so on a phone the two-line header, the toolbar's three
+       inline controls, and three-abreast card action buttons were left to
+       whatever the flex/grid defaults happened to produce — cramped search
+       box, tiny icon button squeezed to 42px next to shrunk text buttons. */
+    @media(max-width:640px){
+      .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+      .card-thumb{height:110px;font-size:40px}
+    }
+    @media(max-width:480px){
+      body{padding:20px 12px}
+      .header h1{font-size:1.4rem}
+      .header .emoji{font-size:1.9rem}
+      .toolbar{flex-direction:column;align-items:stretch}
+      .toolbar .search{min-width:0}
+      .toolbar .btn{width:100%}
+      .grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+      .card-thumb{height:96px;font-size:32px}
+      .card-body{padding:10px 12px;gap:8px}
+      .card-name{font-size:.8rem}
+      .card-actions{flex-wrap:wrap}
+      .card-actions .btn{flex:1 1 auto;padding:9px;font-size:.76rem}
+      .card-actions .btn.icon{flex:0 0 100%;width:100%}
+    }
+  </style>
+</head>
+<body data-particles="14">
+
+{% include "_chrome.html" %}
+
+<div class="wrap">
+  <div class="header">
+    <div class="emoji">📦</div>
+    <h1>Batch Files</h1>
+    <p><span data-count="{{ total }}">{{ total }}</span> file{% if total != 1 %}s{% endif %} &nbsp;·&nbsp; ID: <code>{{ batch_id }}</code></p>
+  </div>
+
+  {% if files %}
+  <div class="toolbar">
+    <label class="search">
+      🔍 <input type="text" id="searchBox" placeholder="Filter files…" oninput="filterFiles(this.value)" aria-label="Filter files"/>
+    </label>
+    <button class="btn btn-primary" type="button" onclick="downloadAll()">⬇️ Download All ({{ total }})</button>
+    <button class="btn btn-ghost" type="button" onclick="copyAll()">🔗 Copy All Links</button>
+  </div>
+
+  <div class="grid" id="grid">
+    {% for f in files %}
+    <div class="file-card reveal" data-name="{{ f.file_name|lower }}">
+      <div class="card-thumb">
+        {% if f._thumb_url %}
+        <div class="card-thumb-skel skeleton"></div>
+        <img src="{{ f._thumb_url }}" alt="" loading="lazy"
+             onload="this.previousElementSibling && this.previousElementSibling.remove()"
+             onerror="this.parentElement.innerHTML='<span>{{ f._icon }}</span>'"/>
+        {% else %}<span>{{ f._icon }}</span>{% endif %}
+        {% if f._streamable %}<div class="play-overlay">▶️</div>{% endif %}
+      </div>
+      <div class="card-body">
+        <div class="card-name">{{ f.file_name }}</div>
+        <div class="card-meta">
+          <span class="badge">💾 {{ f._size_human }}</span>
+          <span class="badge">{{ f.type }}</span>
+        </div>
+        <div class="card-actions">
+          <a class="btn btn-primary" href="{{ f._download_url }}">⬇️ Download</a>
+          {% if f._streamable %}<a class="btn btn-accent" href="{{ f._stream_url }}" target="_blank" rel="noopener">▶️</a>{% endif %}
+          <a class="btn btn-ghost icon" href="{{ f._page_url }}" target="_blank" rel="noopener" title="Open page">🌐</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="empty" id="noResults" style="display:none">🔍 No files match your filter.</div>
+  {% else %}
+  <div class="empty">📭 No files in this batch.</div>
+  {% endif %}
+
+  <div class="footer">Powered by {{ site_name }} · Telegram · Created by {{ creator_name }}</div>
+</div>
+
+<script src="/static/theme.js?v=7" defer></script>
+<script>
+  var ALL_LINKS=[{% for f in files %}"{{ f._download_url }}"{% if not loop.last %},{% endif %}{% endfor %}];
+
+  function filterFiles(q){
+    q=(q||'').trim().toLowerCase();
+    var cards=document.querySelectorAll('.file-card'),shown=0;
+    cards.forEach(function(c){
+      var match=c.getAttribute('data-name').indexOf(q)!==-1;
+      c.classList.toggle('hide',!match);if(match)shown++;
+    });
+    var nr=document.getElementById('noResults');
+    if(nr)nr.style.display=shown?'none':'block';
+  }
+  async function downloadAll(){
+    if(window.FL)FL.toast('⬇️ Checking '+ALL_LINKS.length+' file'+(ALL_LINKS.length!==1?'s':'')+'…');
+    // A broken/expired link returns a full HTML error page (not a file),
+    // and clicking an <a> that points at one causes a real navigation —
+    // the browser would replace this whole batch view just because one
+    // file out of many was unavailable. A lightweight HEAD pre-check lets
+    // us quietly skip only the broken ones instead.
+    var results=await Promise.all(ALL_LINKS.map(function(url){
+      return fetch(url,{method:'HEAD'}).then(function(res){return res.ok;}).catch(function(){return false;});
+    }));
+    var ok=[],failedCount=0;
+    ALL_LINKS.forEach(function(url,i){if(results[i])ok.push(url);else failedCount++;});
+    ok.forEach(function(url,i){
+      setTimeout(function(){var a=document.createElement('a');a.href=url;a.download='';document.body.appendChild(a);a.click();document.body.removeChild(a);},i*800);
+    });
+    if(window.FL){
+      if(failedCount)FL.toast('⚠️ '+failedCount+' file'+(failedCount!==1?'s':'')+' unavailable, skipped. Starting '+ok.length+' download'+(ok.length!==1?'s':'')+'…',ok.length===0);
+      else FL.toast('⬇️ Starting '+ok.length+' download'+(ok.length!==1?'s':'')+'…');
+    }
+  }
+  function copyAll(){
+    if(window.FL)FL.copy(ALL_LINKS.join('\n'),'✅ '+ALL_LINKS.length+' links copied!');
+  }
+</script>
+</body>
+</html>
